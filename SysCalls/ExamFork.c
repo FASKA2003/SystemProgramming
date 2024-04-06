@@ -1,12 +1,18 @@
+#define _GNU_SOURCE
 #include <pthread.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 void *fct_thread(void *args) {
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(rand() % 8, &cpuset);
+  sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
   char threadName = (char)args;
   char C_Name = 'C';
-  printf("Thread %c is running.\n", threadName);
+  printf("Thread %c is running, in CPU %d.\n", threadName, sched_getcpu());
   if (threadName == 'B') {
     pthread_t threadC;
     pthread_create(&threadC, NULL, fct_thread, (void *)C_Name);
